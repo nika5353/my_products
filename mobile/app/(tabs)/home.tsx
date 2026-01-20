@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { fetchUsers } from "../../src/services/users"
 import { fetchUserProducts } from "../../src/services/products"
 import { Ionicons } from "@expo/vector-icons"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function Home() {
   const [showSheet, setShowSheet] = useState(false)
@@ -30,7 +31,7 @@ export default function Home() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Users</Text>
         <TouchableOpacity onPress={() => router.push("/addProduct")}>
@@ -56,12 +57,12 @@ export default function Home() {
         products={products}
         loading={loadingProducts}
       />
-    </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: spacing.lg },
+  container: { flex: 1, paddingHorizontal: spacing.lg },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

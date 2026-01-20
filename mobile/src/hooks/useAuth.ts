@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getToken } from "../services/authStorage"
+import { getToken } from "../cache/authStorage"
 
 export function useAuth() {
   const [loading, setLoading] = useState(true)

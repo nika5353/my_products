@@ -1,21 +1,19 @@
-import { getToken } from "./authStorage"
-
-const API_URL = "https://15ae5d67a455.ngrok-free.app/api"
+import { api } from "../interceptor/http";
 
 export async function fetchUsers() {
-  const token = await getToken()
-  const res = await fetch(`${API_URL}/users`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) throw new Error("Fetch failed")
-  return res.json()
+  try {
+    const { data } = await api.get("/users");
+    return data;
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Fetch failed");
+  }
 }
 
 export async function fetchMe() {
-  const token = await getToken()
-  const res = await fetch(`${API_URL}/users/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) throw new Error("Fetch failed")
-  return res.json()
+  try {
+    const { data } = await api.get("/users/me");
+    return data;
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Fetch failed");
+  }
 }

@@ -1,6 +1,4 @@
-import { getToken } from "./authStorage"
-
-const API_URL = "https://15ae5d67a455.ngrok-free.app/api"
+import { api } from "../interceptor/http";
 
 export async function uploadProduct({
   name,
@@ -11,41 +9,38 @@ export async function uploadProduct({
   name: string;
   price: number;
   image: any;
-  signal?: AbortSignal
+  signal?: AbortSignal;
 }) {
-  const token = await getToken()
-  const form = new FormData()
+  try {
+    const form = new FormData();
 
-  form.append("name", name)
-  form.append("price", String(price))
+    form.append("name", name);
+    form.append("price", String(price));
 
-  if (image) {
-    form.append("thumbnail", {
-      uri: image.uri,
-      name: "thumb.jpg",
-      type: "image/jpeg",
-    } as any)
+    if (image) {
+      form.append("thumbnail", {
+        uri: image.uri,
+        name: "thumb.jpg",
+        type: "image/jpeg",
+      } as any);
+    }
+
+    const { data } = await api.post("/products", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+      signal,
+    });
+
+    return data;
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Upload failed");
   }
-
-  const res = await fetch(`${API_URL}/products`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-    },
-    body: form,
-    signal,
-  });
-
-  if (!res.ok) throw new Error("Upload failed");
-  return res.json()
 }
 
 export async function fetchUserProducts(userId: string) {
-  const token = await getToken()
-  const res = await fetch(`${API_URL}/products/${userId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) throw new Error("Fetch failed")
-  return res.json()
+  try {
+    const { data } = await api.get(`/products/${userId}`);
+    return data;
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Fetch failed");
+  }
 }

@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native"
 import ActionButton from "../../src/components/Button"
 import { spacing } from "../../src/constants/spacing"
-import { removeToken } from "../../src/services/authStorage"
+import { removeToken } from "../../src/cache/authStorage"
 import { router } from "expo-router"
 import { useEffect, useState } from "react"
 import { fetchMe } from "../../src/services/users"

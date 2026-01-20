@@ -26,7 +26,7 @@ type Props = {
 }
 
 const SHEET_HEIGHT = Math.min(Dimensions.get("window").height * 0.75, 520)
-const API_ORIGIN = "https://15ae5d67a455.ngrok-free.app/uploads"
+const API_ORIGIN = process.env.API_UPLOAD_URL || ""
 
 export default function ProductSheet({ products, loading, visible, onClose }: Props) {
   const translateY = useSharedValue(SHEET_HEIGHT)
