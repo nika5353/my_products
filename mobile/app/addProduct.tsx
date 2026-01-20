@@ -5,6 +5,7 @@ import { spacing } from "../src/constants/spacing"
 import * as ImagePicker from "expo-image-picker"
 import { useEffect, useRef, useState } from "react"
 import { uploadProduct } from "../src/services/products"
+import { useRouter } from "expo-router"
 
 export default function AddProduct() {
   const [name, setName] = useState("")
@@ -12,6 +13,7 @@ export default function AddProduct() {
   const [image, setImage] = useState<any>(null)
   const [loading, setLoading] = useState(false)
 
+  const router = useRouter()
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function AddProduct() {
       setLoading(true);
       await uploadProduct({ name, price: Number(price), image, signal: controller.signal })
       Alert.alert("Saved");
+      router.back();
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         const message = e instanceof Error ? e.message : "Upload failed"

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, StyleSheet, Alert } from "react-native"
 import Input from "../../src/components/Input"
 import ActionButton from "../../src/components/Button"
 import { spacing } from "../../src/constants/spacing"
@@ -32,7 +32,8 @@ export default function Register() {
     try {
       clearErrors("email")
       await postRequest("/auth/register", data)
-      router.push("/(auth)/verify")
+      Alert.alert("Success", "Registration successful. Now Log in.")
+      router.push("/(auth)/login")
     } catch (e: any) {
       setError("email", { type: "server", message: e?.message || "Registration failed" })
     }

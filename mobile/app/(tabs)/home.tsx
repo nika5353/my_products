@@ -1,11 +1,11 @@
-import { View, FlatList, StyleSheet, TouchableOpacity, Text, BackHandler } from "react-native"
+import { View, FlatList, StyleSheet, TouchableOpacity, Text, BackHandler, Alert } from "react-native"
 import UserCard from "../../src/components/UserCard"
 import ProductSheet from "../../src/components/ProductSheet"
 import { spacing } from "../../src/constants/spacing"
 import { router, useFocusEffect } from "expo-router"
 import { useCallback, useEffect, useState } from "react"
-import { fetchUsers } from "../../src/services/users"
-import { fetchUserProducts } from "../../src/services/products"
+import { fetchUsers, fetchMe } from "../../src/services/users"
+import { fetchUserProducts, deleteProduct } from "../../src/services/products"
 import { Ionicons } from "@expo/vector-icons"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -14,9 +14,12 @@ export default function Home() {
   const [users, setUsers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchUsers().then(setUsers).catch(() => {})
+    fetchMe().then((user) => setCurrentUserId(user?._id ?? null)).catch(() => {})
   }, [])
 
   useFocusEffect(
@@ -36,12 +39,26 @@ export default function Home() {
 
   const openUserProducts = async (userId: string) => {
     try {
+      setSelectedUserId(userId)
       setLoadingProducts(true)
       setShowSheet(true)
       const data = await fetchUserProducts(userId)
       setProducts(data)
     } finally {
       setLoadingProducts(false)
+    }
+  }
+
+  const handleDeleteProduct = async (productId: string) => {
+    const previous = products
+    setProducts((prev) => prev.filter((item) => item._id !== productId))
+
+    try {
+      await deleteProduct(productId)
+    } catch (err: any) {
+      setProducts(previous)
+      const message = err instanceof Error ? err.message : "Delete failed"
+      Alert.alert("Delete failed", message)
     }
   }
 
@@ -71,6 +88,8 @@ export default function Home() {
         onClose={() => setShowSheet(false)}
         products={products}
         loading={loadingProducts}
+        canDelete={Boolean(selectedUserId && currentUserId && selectedUserId === currentUserId)}
+        onDelete={handleDeleteProduct}
       />
     </SafeAreaView>
   )

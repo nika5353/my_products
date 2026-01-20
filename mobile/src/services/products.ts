@@ -44,3 +44,12 @@ export async function fetchUserProducts(userId: string) {
     throw new Error(err?.response?.data?.message || "Fetch failed");
   }
 }
+
+export async function deleteProduct(productId: string) {
+  try {
+    const { data } = await api.delete(`/products/${productId}`);
+    return data;
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Delete failed");
+  }
+}

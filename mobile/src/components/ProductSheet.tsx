@@ -6,6 +6,7 @@ import {
   FlatList,
   Dimensions,
   Image,
+  TouchableOpacity,
 } from "react-native"
 import Animated, {
   useAnimatedStyle,
@@ -13,8 +14,10 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable"
 import { spacing } from "../constants/spacing"
 import { useEffect, useMemo } from "react"
+import { Ionicons } from "@expo/vector-icons"
 
 type Product = { _id: string; name: string; price: number; thumbnail?: string }
 type ProductWithImage = Product & { imageUri: string | null }
@@ -24,12 +27,21 @@ type Props = {
   loading: boolean
   visible: boolean
   onClose: () => void
+  canDelete?: boolean
+  onDelete?: (productId: string) => void
 }
 
 const SHEET_HEIGHT = Math.min(Dimensions.get("window").height * 0.75, 520) // max 75% of screen or 520px
 const API_ORIGIN = process.env.API_UPLOAD_URL || ""
 
-export default function ProductSheet({ products, loading, visible, onClose }: Props) {
+export default function ProductSheet({
+  products,
+  loading,
+  visible,
+  onClose,
+  canDelete,
+  onDelete,
+}: Props) {
   const translateY = useSharedValue(SHEET_HEIGHT)
 
   const productsWithImages = useMemo<ProductWithImage[]>(() => {
@@ -78,6 +90,8 @@ export default function ProductSheet({ products, loading, visible, onClose }: Pr
 
   if (!visible) return null
 
+  const canSwipeDelete = Boolean(canDelete && onDelete)
+
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.sheet, style]}>
@@ -91,7 +105,7 @@ export default function ProductSheet({ products, loading, visible, onClose }: Pr
             data={productsWithImages}
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => {
-              return (
+              const card = (
                 <View style={styles.card}>
                   {item.imageUri ? (
                     <Image
@@ -110,6 +124,25 @@ export default function ProductSheet({ products, loading, visible, onClose }: Pr
                     <Text style={styles.price}>{item.price} ₾</Text>
                   </View>
                 </View>
+              )
+
+              if (!canSwipeDelete) return card
+
+              return (
+                <ReanimatedSwipeable
+                  overshootRight={false}
+                  renderRightActions={() => (
+                    <TouchableOpacity
+                      style={styles.deleteAction}
+                      onPress={() => onDelete?.(item._id)}
+                    >
+                      <Ionicons name="trash" size={18} color="#fff" />
+                      <Text style={styles.deleteText}>Delete</Text>
+                    </TouchableOpacity>
+                  )}
+                >
+                  {card}
+                </ReanimatedSwipeable>
               )
             }}
             ListEmptyComponent={<Text style={styles.empty}>No products</Text>}
@@ -190,5 +223,18 @@ const styles = StyleSheet.create({
   },
   empty: {
     color: "#6B7280",
+  },
+  deleteAction: {
+    backgroundColor: "#EF4444",
+    borderRadius: 14,
+    paddingHorizontal: spacing.lg,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 6,
+  },
+  deleteText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 })

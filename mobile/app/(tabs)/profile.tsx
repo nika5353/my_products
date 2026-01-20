@@ -14,7 +14,7 @@ export default function Profile() {
 
   const logout = async () => {
     await removeToken();
-    router.replace("/(auth)/login");
+    router.replace("/(auth)/welcome");
   }
 
   useEffect(() => {
