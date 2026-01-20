@@ -1,9 +1,9 @@
-import { View, FlatList, StyleSheet, TouchableOpacity, Text } from "react-native"
+import { View, FlatList, StyleSheet, TouchableOpacity, Text, BackHandler } from "react-native"
 import UserCard from "../../src/components/UserCard"
 import ProductSheet from "../../src/components/ProductSheet"
 import { spacing } from "../../src/constants/spacing"
-import { router } from "expo-router"
-import { useEffect, useState } from "react"
+import { router, useFocusEffect } from "expo-router"
+import { useCallback, useEffect, useState } from "react"
 import { fetchUsers } from "../../src/services/users"
 import { fetchUserProducts } from "../../src/services/products"
 import { Ionicons } from "@expo/vector-icons"
@@ -18,6 +18,21 @@ export default function Home() {
   useEffect(() => {
     fetchUsers().then(setUsers).catch(() => {})
   }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (router.canGoBack()) {
+          router.replace("/(tabs)/home")
+          return true
+        }
+        return false
+      }
+
+      const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress)
+      return () => subscription.remove()
+    }, [])
+  )
 
   const openUserProducts = async (userId: string) => {
     try {

@@ -14,9 +14,10 @@ import Animated, {
 } from "react-native-reanimated"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import { spacing } from "../constants/spacing"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 
 type Product = { _id: string; name: string; price: number; thumbnail?: string }
+type ProductWithImage = Product & { imageUri: string | null }
 
 type Props = {
   products: Product[]
@@ -25,11 +26,31 @@ type Props = {
   onClose: () => void
 }
 
-const SHEET_HEIGHT = Math.min(Dimensions.get("window").height * 0.75, 520)
+const SHEET_HEIGHT = Math.min(Dimensions.get("window").height * 0.75, 520) // max 75% of screen or 520px
 const API_ORIGIN = process.env.API_UPLOAD_URL || ""
 
 export default function ProductSheet({ products, loading, visible, onClose }: Props) {
   const translateY = useSharedValue(SHEET_HEIGHT)
+
+  const productsWithImages = useMemo<ProductWithImage[]>(() => {
+    return products.map((item) => {
+      const imageUri = item.thumbnail
+        ? item.thumbnail.startsWith("http")
+          ? item.thumbnail
+          : `${API_ORIGIN}/${item.thumbnail}`
+        : null
+
+      return { ...item, imageUri }
+    })
+  }, [products])
+
+  useEffect(() => {
+    productsWithImages.forEach((item) => {
+      if (item.imageUri?.startsWith("http")) {
+        Image.prefetch(item.imageUri).catch(() => {})
+      }
+    })
+  }, [productsWithImages])
 
   useEffect(() => {
     translateY.value = withSpring(visible ? 0 : SHEET_HEIGHT)
@@ -67,19 +88,17 @@ export default function ProductSheet({ products, loading, visible, onClose }: Pr
           <ActivityIndicator />
         ) : (
           <FlatList
-            data={products}
+            data={productsWithImages}
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => {
-              const imageUri = item.thumbnail
-                ? item.thumbnail.startsWith("http")
-                  ? item.thumbnail
-                  : `${API_ORIGIN}/${item.thumbnail}`
-                : null
-
               return (
                 <View style={styles.card}>
-                  {imageUri ? (
-                    <Image source={{ uri: imageUri }} style={styles.thumb} resizeMode="cover" />
+                  {item.imageUri ? (
+                    <Image
+                      source={{ uri: item.imageUri, cache: "force-cache" }}
+                      style={styles.thumb}
+                      resizeMode="cover"
+                    />
                   ) : (
                     <View style={styles.thumbPlaceholder} />
                   )}
@@ -96,6 +115,11 @@ export default function ProductSheet({ products, loading, visible, onClose }: Pr
             ListEmptyComponent={<Text style={styles.empty}>No products</Text>}
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+            initialNumToRender={6}
+            maxToRenderPerBatch={8}
+            windowSize={5}
+            removeClippedSubviews
+            updateCellsBatchingPeriod={50}
           />
         )}
       </Animated.View>

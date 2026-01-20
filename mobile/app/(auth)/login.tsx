@@ -11,7 +11,11 @@ export default function Login() {
   const [login, setLogin] = useState("")
   const [password, setPassword] = useState("")
 
+  const isDisabled = !login.trim() || !password.trim()
+
   const handleLogin = async () => {
+    if (isDisabled) return
+
     try {
       const data = await postRequest("/auth/login", {
         login,
@@ -21,7 +25,8 @@ export default function Login() {
       await saveToken(data.token)
       router.replace("/(tabs)/home")
     } catch (e) {
-      Alert.alert("Login failed")
+      const message = e instanceof Error ? e.message : "Login failed"
+      Alert.alert("Login failed", message)
     }
   }
 
@@ -30,7 +35,7 @@ export default function Login() {
       <Text style={styles.title}>Welcome back</Text>
       <Input placeholder="Username or Email" value={login} onChangeText={setLogin} />
       <Input placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-      <ActionButton title="Confirm" onPress={handleLogin} />
+      <ActionButton title="Confirm" onPress={handleLogin} disabled={isDisabled} />
     </View>
   )
 }

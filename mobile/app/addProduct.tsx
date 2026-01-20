@@ -27,8 +27,10 @@ export default function AddProduct() {
     if (!res.canceled) setImage(res.assets[0])
   };
 
+  const isSaveDisabled = loading || !name.trim() || !price.trim() || !image
+
   const save = async () => {
-    if (loading) return
+    if (isSaveDisabled) return
 
     const controller = new AbortController()
     abortRef.current = controller
@@ -39,7 +41,8 @@ export default function AddProduct() {
       Alert.alert("Saved");
     } catch (e: any) {
       if (e?.name !== "AbortError") {
-        Alert.alert("Upload failed")
+        const message = e instanceof Error ? e.message : "Upload failed"
+        Alert.alert("Upload failed", message)
       }
     } finally {
       setLoading(false)
@@ -53,11 +56,15 @@ export default function AddProduct() {
       <Input placeholder="Name" value={name} onChangeText={setName} />
       <Input placeholder="Price" keyboardType="numeric" value={price} onChangeText={setPrice} />
 
-      <ActionButton title="Upload Thumbnail" onPress={pickImage} />
+      <ActionButton title="Upload Thumbnail" onPress={pickImage} disabled={loading} />
       {image && <Image source={{ uri: image.uri }} style={styles.preview} />}
 
       <View style={{ marginTop: spacing.md }}>
-        <ActionButton title={loading ? "Saving..." : "Save Product"} onPress={save} />
+        <ActionButton
+          title={loading ? "Saving..." : "Save Product"}
+          onPress={save}
+          disabled={isSaveDisabled}
+        />
         {loading && <ActivityIndicator style={{ marginTop: spacing.sm }} />}
       </View>
     </View>
