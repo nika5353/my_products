@@ -32,7 +32,7 @@ type Props = {
 }
 
 const SHEET_HEIGHT = Math.min(Dimensions.get("window").height * 0.75, 520) // max 75% of screen or 520px
-const API_ORIGIN = "https://9261141a49dc.ngrok-free.app/uploads"
+const API_ORIGIN = "https://c9678aecfc7b.ngrok-free.app/uploads"
 
 export default function ProductSheet({
   products,
@@ -45,6 +45,8 @@ export default function ProductSheet({
   const translateY = useSharedValue(SHEET_HEIGHT)
 
   const productsWithImages = useMemo<ProductWithImage[]>(() => {
+    if (!Array.isArray(products)) return []
+
     return products.map((item) => {
       const imageUri = item.thumbnail
         ? item.thumbnail.startsWith("http")

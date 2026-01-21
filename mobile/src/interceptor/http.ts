@@ -2,7 +2,7 @@ import axios from "axios";
 import { getToken } from "../cache/authStorage";
 
 export const api = axios.create({
-  baseURL: "https://9261141a49dc.ngrok-free.app/api",
+  baseURL: "https://c9678aecfc7b.ngrok-free.app/api",
   headers: { "Content-Type": "application/json" },
 });
 
